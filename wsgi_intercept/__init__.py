@@ -266,7 +266,7 @@ class wsgi_fake_socket:
                 for data in self.write_results:
                     self.output.write(data)
 
-            if generator_data:
+            if generator_data is not None:
                 self.output.write(generator_data)
                 for data in self.result:
                     self.output.write(data)
