@@ -6,6 +6,7 @@ from wsgi_intercept import test_wsgi_app, webtest
 
 class WSGI_Test(webtest.WebCase):
     HTTP_CONN = wsgi_intercept.WSGI_HTTPConnection
+    HOST = 'some_hopefully_nonexistant_domain'
 
     def setUp(self):
         wsgi_intercept.add_wsgi_intercept(self.HOST, self.PORT,

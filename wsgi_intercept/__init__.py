@@ -319,6 +319,9 @@ class WSGI_HTTPConnection(HTTPConnection):
         """
         Override the connect() function to intercept calls to certain
         host/ports.
+        
+        If no app at host/port has been registered for interception then 
+        a normal HTTPConnection is made.
         """
         if debuglevel:
             sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))

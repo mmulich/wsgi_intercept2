@@ -72,6 +72,17 @@ The only tricky bit in there is that different handler classes need to
 be constructed for Python 2.3 and Python 2.4, because the httplib
 interface changed between those versions.
 
+httplib2
+--------
+
+httplib2_ is a 3rd party extension of the built-in ``httplib``.  To intercept 
+requests, it is similar to urllib2::
+
+    from wsgi_intercept.httplib2_intercept import install
+    install()
+
+(Contributed by `David "Whit" Morris`_.)
+
 webtest
 -------
 
@@ -151,6 +162,8 @@ zope.testbrowser is also pretty easy: ::
    b = WSGI_Browser()
 
 .. _urllib2: http://docs.python.org/lib/module-urllib2.html
+.. _httplib2: http://code.google.com/p/httplib2/
+.. _David "Whit" Morris: http://public.xdi.org/=whit
 .. _webtest: http://www.cherrypy.org/file/trunk/cherrypy/test/webtest.py
 .. _webunit: http://mechanicalcat.net/tech/webunit/
 .. _mechanize: http://wwwsearch.sf.net/

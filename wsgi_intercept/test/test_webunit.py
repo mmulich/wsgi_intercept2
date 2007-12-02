@@ -19,7 +19,7 @@ class WSGI_WebTestCase(WebTestCase):
     scheme_handlers = dict(http=WSGI_HTTP)
 
     def setUp(self):
-        wsgi_intercept.add_wsgi_intercept('127.0.0.1', 80,
+        wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 80,
                                           test_wsgi_app.create_fn)
 
     def test_get(self):
