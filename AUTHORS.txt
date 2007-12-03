@@ -1,0 +1,8 @@
+AUTHORS
+
+Titus Brown
+Kumar McMillan
+
+CONTRIBUTORS
+
+David "Whit" Morris

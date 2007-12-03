@@ -1,5 +1,5 @@
 #! /usr/bin/env python2.3
-from wsgi_intercept.mechanoid.wsgi_browser import Browser
+from wsgi_intercept.mechanoid_intercept import Browser
 import wsgi_intercept
 from wsgi_intercept import test_wsgi_app
 

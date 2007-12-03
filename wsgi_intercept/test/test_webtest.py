@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 import sys
 import wsgi_intercept
-from wsgi_intercept.urllib2 import wsgi_urllib2
-from wsgi_intercept import test_wsgi_app, webtest
+from wsgi_intercept import test_wsgi_app, webtest_intercept
 
-class WSGI_Test(webtest.WebCase):
+class WSGI_Test(webtest_intercept.WebCase):
     HTTP_CONN = wsgi_intercept.WSGI_HTTPConnection
     HOST = 'some_hopefully_nonexistant_domain'
 

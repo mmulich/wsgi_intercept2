@@ -1,7 +1,7 @@
 
 from nose.tools import with_setup, raises
 from urllib2 import URLError
-from wsgi_intercept.mechanize.wsgi_browser import Browser
+from wsgi_intercept.mechanize_intercept import Browser
 import wsgi_intercept
 from wsgi_intercept import test_wsgi_app
 from mechanize import Browser as MechanizeBrowser

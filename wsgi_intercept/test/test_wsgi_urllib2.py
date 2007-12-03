@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import urllib2
 
-from wsgi_intercept.urllib2 import wsgi_urllib2
+from wsgi_intercept import urllib2_intercept
 import wsgi_intercept
 from wsgi_intercept import test_wsgi_app
 
@@ -15,16 +15,9 @@ def setup():
     wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 80, test_wsgi_app.create_fn)
 
 def test():
-    wsgi_urllib2.install_opener()
+    urllib2_intercept.install_opener()
     urllib2.urlopen('http://some_hopefully_nonexistant_domain:80/')
     assert test_wsgi_app.success()
 
 def teardown():
     wsgi_intercept.debuglevel = _saved_debuglevel
-
-if __name__ == '__main__':
-    try:
-        setup()
-        test()
-    finally:
-        teardown()

@@ -12,7 +12,7 @@ class WSGI_HTTP(HTTP):
 
 ###
 
-from wsgi_intercept.webunit.webunittest import WebTestCase
+from wsgi_intercept.webunit_intercept import WebTestCase
 import unittest
 
 class WSGI_WebTestCase(WebTestCase):

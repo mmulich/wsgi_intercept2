@@ -16,7 +16,7 @@ sys.path.insert(0, 'urllib2')
 import unittest
 import urllib2
 import wsgi_intercept
-from wsgi_intercept.urllib2 import wsgi_urllib2
+from wsgi_intercept import urllib2_intercept as wsgi_urllib2
 
 test_page = """
     <html>

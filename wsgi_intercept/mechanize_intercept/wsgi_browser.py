@@ -5,7 +5,7 @@ object.
 
 from httplib import HTTP
 from mechanize import Browser as MechanizeBrowser
-from wsgi_intercept.urllib2.wsgi_urllib2 import install_opener, uninstall_opener
+from wsgi_intercept.urllib2_intercept import install_opener, uninstall_opener
 try:
     from mechanize import HTTPHandler
 except ImportError:
