@@ -172,6 +172,9 @@ class publish_docs(Command):
         summary, doc = pydoc.splitdoc(wsgi_intercept.__doc__)
         wikidoc = publish_string(doc, writer=WikiWriter())
         print wikidoc
+        
+        ## Google html is so broken that this isn't working :/
+        
         # br = Browser()
         # br.open('http://code.google.com/p/wsgi-intercept/admin')
         # url = br.geturl()
