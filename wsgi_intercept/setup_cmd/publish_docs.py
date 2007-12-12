@@ -82,7 +82,9 @@ class WikiVisitor(SparseNodeVisitor):
         self.output.append(self.indent)
         
     def depart_paragraph(self, node):
-        self.output.append('\n\n')
+        self.output.append('\n')
+        if not isinstance(node.parent, nodes.list_item):
+            self.output.append('\n')
         if self.indent == self.list_item_prefix:
             # we're in a sub paragraph of a list item
             self.indent = ' ' * self.list_depth
