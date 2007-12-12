@@ -52,7 +52,7 @@ class WikiVisitor(SparseNodeVisitor):
         if self.list_depth == 0:
             self.list_item_prefix = None
         else:
-            (' ' * self.list_depth) + '* '
+            self.list_item_prefix = (' ' * self.list_depth) + '* '
         self.output.append('\n\n')
                            
     def visit_list_item(self, node):
