@@ -7,7 +7,6 @@ from mechanize import Browser as MechanizeBrowser
 from wsgi_intercept.mechanize_intercept import Browser as InterceptBrowser
 from zope.testbrowser.browser import Browser as ZopeTestbrowser
 from httplib import HTTP
-from ClientCookie import HTTPHandler
 import sys, os.path        
 
 class WSGI_Browser(ZopeTestbrowser):

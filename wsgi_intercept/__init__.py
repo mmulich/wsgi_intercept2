@@ -352,15 +352,14 @@ def make_environ(inp, host, port, script_name):
                      "wsgi.multiprocess" : 0,
                      "wsgi.run_once" : 0,
     
+                     "PATH_INFO" : path_info,
+                     "QUERY_STRING" : query_string,
+                     "REMOTE_ADDR" : '127.0.0.1',
                      "REQUEST_METHOD" : method,
                      "SCRIPT_NAME" : script_name,
-                     "PATH_INFO" : path_info,
-          
                      "SERVER_NAME" : host,
                      "SERVER_PORT" : str(port),
                      "SERVER_PROTOCOL" : protocol,
-
-                     "REMOTE_ADDR" : '127.0.0.1',
                      })
 
     #
@@ -483,6 +482,9 @@ class wsgi_fake_socket:
                     self.output.write(data)
         except StopIteration:
             pass
+        
+        if hasattr(self.result, 'close'):
+            self.result.close()
 
         if debuglevel >= 2:
             print "***", self.output.getvalue(), "***"

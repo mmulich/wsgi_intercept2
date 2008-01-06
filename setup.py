@@ -46,5 +46,6 @@ setup(
     long_description = long_description,
     license = 'MIT License',
     packages = find_packages(),
-    test_suite = "nose.collector"
+    test_suite = "nose.collector",
+    tests_require=['Paste'],
     )

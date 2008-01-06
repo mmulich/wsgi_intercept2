@@ -22,22 +22,16 @@ def connect(self):
     if wsgi_intercept.debuglevel:
         sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
 
-    try:
-        (app, script_name) = self.get_app(self.host, self.port)
-        if app:
-            if wsgi_intercept.debuglevel:
-                sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
-                                 (self.host, self.port,))
-            self.sock = wsgi_intercept.wsgi_fake_socket(app,
-                                                        self.host, self.port,
-                                                        script_name)
-        else:
-            self._connect()
-
-    except Exception, e:
-        if wsgi_intercept.debuglevel:              # intercept & print out tracebacks
-            traceback.print_exc()
-        raise
+    (app, script_name) = self.get_app(self.host, self.port)
+    if app:
+        if wsgi_intercept.debuglevel:
+            sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
+                             (self.host, self.port,))
+        self.sock = wsgi_intercept.wsgi_fake_socket(app,
+                                                    self.host, self.port,
+                                                    script_name)
+    else:
+        self._connect()
 
 class HTTP_WSGIInterceptorWithTimeout(HTTPConnectionWithTimeout, InterceptorMixin):
     _connect = httplib2.HTTPConnectionWithTimeout.connect

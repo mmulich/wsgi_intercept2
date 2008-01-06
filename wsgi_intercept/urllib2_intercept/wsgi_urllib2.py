@@ -9,16 +9,7 @@ from httplib import HTTP
 # ugh, version dependence.
 #
 
-if sys.version_info[:2] == (2, 4,):
-    class WSGI_HTTPHandler(HTTPHandler):
-        """
-        Override the default HTTPHandler class with one that uses the
-        WSGI_HTTPConnection class to open HTTP URLs.
-        """
-        def http_open(self, req):
-            return self.do_open(WSGI_HTTPConnection, req)
-
-else:
+if sys.version_info[:2] == (2, 3):
     class WSGI_HTTP(HTTP):
         _connection_class = WSGI_HTTPConnection
 
@@ -29,6 +20,15 @@ else:
         """
         def http_open(self, req):
             return self.do_open(WSGI_HTTP, req)
+
+else:
+    class WSGI_HTTPHandler(HTTPHandler):
+        """
+        Override the default HTTPHandler class with one that uses the
+        WSGI_HTTPConnection class to open HTTP URLs.
+        """
+        def http_open(self, req):
+            return self.do_open(WSGI_HTTPConnection, req)
     
 def install_opener():
     handler = WSGI_HTTPHandler()
