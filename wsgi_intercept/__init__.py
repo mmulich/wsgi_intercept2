@@ -250,13 +250,17 @@ def add_wsgi_intercept(host, port, app_create_fn, script_name=''):
     """
     _wsgi_intercept[(host, port)] = (app_create_fn, script_name)
 
-def remove_wsgi_intercept(host, port):
+def remove_wsgi_intercept(*args):
     """
-    Remove the WSGI intercept call for (host, port).
+    Remove the WSGI intercept call for (host, port).  If no arguments are given, removes all intercepts
     """
-    key = (host, port)
-    if _wsgi_intercept.has_key(key):
-        del _wsgi_intercept[key]
+    global _wsgi_intercept
+    if len(args)==0:
+        _wsgi_intercept = {}
+    else:
+        key = (args[0], args[1])
+        if _wsgi_intercept.has_key(key):
+            del _wsgi_intercept[key]
 
 #
 # make_environ: behave like a Web server.  Take in 'input', and behave
@@ -555,67 +559,3 @@ class WSGI_HTTPConnection(HTTPConnection):
                 traceback.print_exc()
             raise
 
-### DEBUGGING CODE -- to help me figure out communications stuff. ###
-
-# (ignore me, please)
-
-'''
-import socket
-    
-class file_wrapper:
-    def __init__(self, fp):
-        self.fp = fp
-
-    def readline(self):
-        d = self.fp.readline()
-        if debuglevel:
-            print 'file_wrapper readline:', d
-        return d
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        d = self.fp.next()
-        if debuglevel:
-            print 'file_wrapper next:', d
-        return d
-
-    def read(self, *args):
-        d = self.fp.read(*args)
-        if debuglevel:
-            print 'file_wrapper read:', d
-        return d
-
-    def close(self):
-        if debuglevel:
-            print 'file_wrapper close'
-        self.fp.close()
-
-class intercept_socket:
-    """
-    A socket that intercepts everything written to it & read from it.
-    """
-
-    def __init__(self):
-        for res in socket.getaddrinfo("floating.caltech.edu", 80, 0,
-                                      socket.SOCK_STREAM):
-            af, socktype, proto, canonname, sa = res
-            self.sock = socket.socket(af, socktype, proto)
-            self._open = True
-            self.sock.connect(sa)
-            break
-
-    def makefile(self, *args, **kwargs):
-        fp = self.sock.makefile('rb', 0)
-        return file_wrapper(fp)
-
-    def sendall(self, str):
-        if not self._open:
-            raise Exception
-
-        return self.sock.sendall(str)
-    
-    def close(self):
-        self._open = False
-'''

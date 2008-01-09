@@ -1,4 +1,9 @@
 
+0.3.3
+-----
+
+- issue9: fixed major bug where HTTPS was not supported by all intercept mechanisms except for zope.textbrowser (this was originally reported by Robert Leftwich on the twill list).
+
 0.3.2
 -----
 

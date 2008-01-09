@@ -21,9 +21,26 @@ class WSGI_WebTestCase(WebTestCase):
     def setUp(self):
         wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 80,
                                           test_wsgi_app.create_fn)
+    
+    def tearDown(self):
+        wsgi_intercept.remove_wsgi_intercept()
 
     def test_get(self):
-        self.page('/')
+        r = self.page('http://some_hopefully_nonexistant_domain/')
+        assert test_wsgi_app.success()
+        
+class WSGI_HTTPS_WebTestCase(WebTestCase):
+    scheme_handlers = dict(https=WSGI_HTTP)
+
+    def setUp(self):
+        wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 443,
+                                          test_wsgi_app.create_fn)
+    
+    def tearDown(self):
+        wsgi_intercept.remove_wsgi_intercept()
+
+    def test_get(self):
+        r = self.page('https://some_hopefully_nonexistant_domain/')
         assert test_wsgi_app.success()
 
 if __name__ == '__main__':

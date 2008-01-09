@@ -9,10 +9,10 @@ import httplib2
 _saved_debuglevel = None
 
 
-def install():
+def install(port=80):
     _saved_debuglevel, wsgi_intercept.debuglevel = wsgi_intercept.debuglevel, 1
     httplib2_intercept.install()
-    wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 80, test_wsgi_app.create_fn)
+    wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', port, test_wsgi_app.create_fn)
 
 def uninstall():
     wsgi_intercept.debuglevel = _saved_debuglevel
@@ -29,3 +29,9 @@ def test_success():
 def test_bogus_domain():
     wsgi_intercept.debuglevel = 1;
     httplib2_intercept.HTTP_WSGIInterceptorWithTimeout("_nonexistant_domain_").connect()
+
+@with_setup(lambda: install(443), uninstall)
+def test_https_success():
+    http = httplib2.Http()
+    resp, content = http.request('https://some_hopefully_nonexistant_domain/', 'GET')
+    assert test_wsgi_app.success()
