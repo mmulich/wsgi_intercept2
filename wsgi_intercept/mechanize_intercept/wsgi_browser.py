@@ -21,19 +21,13 @@ class Browser(MechanizeBrowser):
     A version of the mechanize browser class that
     installs the WSGI intercept handler
     """
+    handler_classes = MechanizeBrowser.handler_classes.copy()
+    handler_classes['http'] = WSGI_HTTPHandler
+    handler_classes['https'] = WSGI_HTTPSHandler
     def __init__(self, *args, **kwargs):
         # install WSGI intercept handler.
         install(self)
         MechanizeBrowser.__init__(self, *args, **kwargs)
 
 def install(browser):
-    # this is for some old version?
-    browser.handler_classes['http'] = WSGI_HTTPHandler
-    if WSGI_HTTPSHandler is not None:
-        browser.handler_classes['https'] = WSGI_HTTPSHandler
-    # for 0.0.11a
     install_opener()
-    import mechanize
-    mechanize.UserAgent.handler_classes['http'] = WSGI_HTTPHandler
-    if WSGI_HTTPSHandler is not None:
-        mechanize.UserAgent.handler_classes['https'] = WSGI_HTTPSHandler
