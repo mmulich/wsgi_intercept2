@@ -457,7 +457,8 @@ class wsgi_fake_socket:
         environ = make_environ(inp, self.host, self.port, self.script_name)
 
         # run the application.
-        self.result = iter(self.app(environ, start_response))
+        app_result = self.app(environ, start_response)
+        self.result = iter(app_result)
 
         ###
 
@@ -480,16 +481,19 @@ class wsgi_fake_socket:
                 for data in self.write_results:
                     self.output.write(data)
 
-            if generator_data is not None:
+            if generator_data:
                 self.output.write(generator_data)
-                for data in self.result:
+
+                while 1:
+                    data = self.result.next()
                     self.output.write(data)
+                    
         except StopIteration:
             pass
-        
-        if hasattr(self.result, 'close'):
-            self.result.close()
 
+        if hasattr(app_result, 'close'):
+            app_result.close()
+            
         if debuglevel >= 2:
             print "***", self.output.getvalue(), "***"
 

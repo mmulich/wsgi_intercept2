@@ -207,7 +207,14 @@ class WebCase(TestCase):
         if result is None:
             result = self.defaultTestResult()
         result.startTest(self)
-        testMethod = getattr(self, self._TestCase__testMethodName)
+        if hasattr(self, '_testMethodName'):
+            # 2.5 + ?
+            testMethod = getattr(self, self._testMethodName)
+        elif hasattr(self, '_TestCase__testMethodName'):
+            # 2.4
+            testMethod = getattr(self, self._TestCase__testMethodName)
+        else:
+            raise AttributeError("Not sure how to get the test method in %s" % self)
         try:
             try:
                 self.setUp()

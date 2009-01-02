@@ -1,6 +1,6 @@
 #! /usr/bin/env python2.4
 from wsgi_intercept import httplib2_intercept
-from nose.tools import with_setup, raises
+from nose.tools import with_setup, raises, eq_
 from socket import gaierror
 import wsgi_intercept
 from wsgi_intercept import test_wsgi_app
@@ -22,6 +22,7 @@ def uninstall():
 def test_success():
     http = httplib2.Http()
     resp, content = http.request('http://some_hopefully_nonexistant_domain:80/', 'GET')
+    eq_(content, "WSGI intercept successful!\n")
     assert test_wsgi_app.success()
 
 @with_setup(install, uninstall)
