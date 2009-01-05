@@ -47,5 +47,5 @@ setup(
     license = 'MIT License',
     packages = find_packages(),
     test_suite = "nose.collector",
-    tests_require=['Paste'],
+    tests_require=['nose', 'Paste', 'httplib2', 'mechanize', 'mechanoid', 'WebTest', 'zope.testbrowser', 'webunit'],
     )

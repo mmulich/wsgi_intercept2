@@ -1,4 +1,9 @@
 
+0.3.4
+-----
+
+- issue11: fixed bug where query string and path info was unquoted when it shouldn't be
+
 0.3.3
 -----
 

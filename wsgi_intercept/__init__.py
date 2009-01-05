@@ -333,10 +333,10 @@ def make_environ(inp, host, port, script_name):
         url = url[len(script_name):]
 
     url = url.split('?', 1)
-    path_info = urllib.unquote_plus(url[0])
+    path_info = url[0]
     query_string = ""
     if len(url) == 2:
-        query_string = urllib.unquote_plus(url[1])
+        query_string = url[1]
 
     if debuglevel:
         print "method: %s; script_name: %s; path_info: %s; query_string: %s" % (method, script_name, path_info, query_string)
