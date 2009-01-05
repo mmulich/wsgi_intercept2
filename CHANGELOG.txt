@@ -1,4 +1,9 @@
 
+0.4.0
+-----
+
+- issue13: ported a bugfix from twill that fixed the content response getting duplicated when using the Django [and possibly other?] wsgi handlers (reported by Ed Summers)
+
 0.3.4
 -----
 
