@@ -215,7 +215,7 @@ If you aren't already there, this project lives on `Google Code`_.  Please submi
 .. _Issue Tracker: http://code.google.com/p/wsgi-intercept/issues/list
 
 """
-__version__ = '0.4'
+__version__ = '0.5.0'
 
 import sys
 from httplib import HTTPConnection
@@ -562,4 +562,59 @@ class WSGI_HTTPConnection(HTTPConnection):
             if debuglevel:              # intercept & print out tracebacks
                 traceback.print_exc()
             raise
+
+#
+# WSGI_HTTPSConnection
+#
+
+try:
+    from httplib import HTTPSConnection
+except ImportError:
+    pass
+else:
+    class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
+        """
+        Intercept all traffic to certain hosts & redirect into a WSGI
+        application object.
+        """
+        def get_app(self, host, port):
+            """
+            Return the app object for the given (host, port).
+            """
+            key = (host, int(port))
+    
+            app, script_name = None, None
+            
+            if _wsgi_intercept.has_key(key):
+                (app_fn, script_name) = _wsgi_intercept[key]
+                app = app_fn()
+    
+            return app, script_name        
+        
+        def connect(self):
+            """
+            Override the connect() function to intercept calls to certain
+            host/ports.
+            
+            If no app at host/port has been registered for interception then 
+            a normal HTTPSConnection is made.
+            """
+            if debuglevel:
+                sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
+                                 
+            try:
+                (app, script_name) = self.get_app(self.host, self.port)
+                if app:
+                    if debuglevel:
+                        sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
+                                         (self.host, self.port,))
+                    self.sock = wsgi_fake_socket(app, self.host, self.port,
+                                                 script_name)
+                else:
+                    HTTPSConnection.connect(self)
+                    
+            except Exception, e:
+                if debuglevel:              # intercept & print out tracebacks
+                    traceback.print_exc()
+                raise
 

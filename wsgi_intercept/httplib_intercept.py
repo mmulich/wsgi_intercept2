@@ -14,7 +14,7 @@ from httplib import (
 
 def install():
     httplib.HTTPConnection = wsgi_intercept.WSGI_HTTPConnection
-    httplib.HTTPSConnection = wsgi_intercept.WSGI_HTTPConnection
+    httplib.HTTPSConnection = wsgi_intercept.WSGI_HTTPSConnection
 
 def uninstall():
     httplib.HTTPConnection = OriginalHTTPConnection

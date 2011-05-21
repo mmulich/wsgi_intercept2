@@ -12,18 +12,19 @@ _saved_debuglevel = None
 def http_install():
     _saved_debuglevel, wsgi_intercept.debuglevel = wsgi_intercept.debuglevel, 1
     httplib_intercept.install()
-    wsgi_intercept.add_wsgi_intercept('http://some_hopefully_nonexistant_domain', 80, test_wsgi_app.create_fn)
+    wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 80, test_wsgi_app.create_fn)
 
 def http_uninstall():
     wsgi_intercept.debuglevel = _saved_debuglevel
-    wsgi_intercept.remove_wsgi_intercept('http://some_hopefully_nonexistant_domain', 80)
+    wsgi_intercept.remove_wsgi_intercept('some_hopefully_nonexistant_domain', 80)
     httplib_intercept.uninstall()
 
 @with_setup(http_install, http_uninstall)
-def test_success():
-    http = httplib.HTTPConnection('http://some_hopefully_nonexistant_domain:80')
-    content = http.request('GET', '/').read()
-    eq_(content, "WSGI intercept successful!\n")
+def test_http_success():
+    http = httplib.HTTPConnection('some_hopefully_nonexistant_domain')
+    http.request('GET', '/')
+    content = http.getresponse().read()
+    eq_(content, 'WSGI intercept successful!\n')
     assert test_wsgi_app.success()
 
 
@@ -31,15 +32,17 @@ def test_success():
 def https_install():
     _saved_debuglevel, wsgi_intercept.debuglevel = wsgi_intercept.debuglevel, 1
     httplib_intercept.install()
-    wsgi_intercept.add_wsgi_intercept('https://some_hopefully_nonexistant_domain', 443, test_wsgi_app.create_fn)
+    wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', 443, test_wsgi_app.create_fn)
 
 def https_uninstall():
     wsgi_intercept.debuglevel = _saved_debuglevel
-    wsgi_intercept.remove_wsgi_intercept('https://some_hopefully_nonexistant_domain', 443)
+    wsgi_intercept.remove_wsgi_intercept('some_hopefully_nonexistant_domain', 443)
     httplib_intercept.uninstall()
     
-@with_setup(https_install, https_install)
+@with_setup(https_install, https_uninstall)
 def test_https_success():
-    http = httplib.HTTPSConnection('https://some_hopefully_nonexistant_domain:80')
-    resp, content = http.request('/', 'GET').read()
+    http = httplib.HTTPSConnection('some_hopefully_nonexistant_domain')
+    http.request('GET', '/')
+    content = http.getresponse().read()
+    eq_(content, 'WSGI intercept successful!\n')
     assert test_wsgi_app.success()

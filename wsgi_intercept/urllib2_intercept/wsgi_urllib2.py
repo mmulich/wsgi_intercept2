@@ -2,7 +2,7 @@ import sys
 from wsgi_intercept import WSGI_HTTPConnection
 
 import urllib2, httplib
-from urllib2 import HTTPHandler, HTTPSHandler
+from urllib2 import HTTPHandler
 from httplib import HTTP
 
 #
@@ -36,13 +36,16 @@ else:
     if hasattr(httplib, 'HTTPS'):
         # urllib2 does this check as well, I assume it's to see if 
         # python was compiled with SSL support
+        from wsgi_intercept import WSGI_HTTPSConnection
+        from urllib2 import HTTPSHandler
+        
         class WSGI_HTTPSHandler(HTTPSHandler):
             """
             Override the default HTTPSHandler class with one that uses the
             WSGI_HTTPConnection class to open HTTPS URLs.
             """
             def https_open(self, req):
-                return self.do_open(WSGI_HTTPConnection, req)
+                return self.do_open(WSGI_HTTPSConnection, req)
     else:
         WSGI_HTTPSHandler = None
     
