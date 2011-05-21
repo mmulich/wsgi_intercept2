@@ -28,7 +28,7 @@ def test_intercept_removed():
     b = WSGI_Browser()
     b.open('http://some_hopefully_nonexistant_domain:80/')
     
-@with_setup(add_intercept, remove_intercept)
+@with_setup(lambda: add_intercept(443), remove_intercept)
 def test_https_intercepted():
     b = WSGI_Browser()
     b.open('https://some_hopefully_nonexistant_domain/')
