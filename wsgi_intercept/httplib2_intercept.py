@@ -7,7 +7,7 @@
 
 import httplib2
 import wsgi_intercept
-from httplib2 import HTTPConnectionWithTimeout, HTTPSConnectionWithTimeout
+from httplib2 import SCHEME_TO_CONNECTION, HTTPConnectionWithTimeout, HTTPSConnectionWithTimeout
 import sys
 
 InterceptorMixin = wsgi_intercept.WSGI_HTTPConnection
@@ -42,9 +42,9 @@ class HTTPS_WSGIInterceptorWithTimeout(HTTPSConnectionWithTimeout, InterceptorMi
     connect = connect
 
 def install():
-    httplib2.HTTPConnectionWithTimeout = HTTP_WSGIInterceptorWithTimeout
-    httplib2.HTTPSConnectionWithTimeout = HTTPS_WSGIInterceptorWithTimeout
+    SCHEME_TO_CONNECTION['http'] =  HTTP_WSGIInterceptorWithTimeout
+    SCHEME_TO_CONNECTION['https'] = HTTPS_WSGIInterceptorWithTimeout
 
 def uninstall():
-    httplib2.HTTPConnectionWithTimeout = HTTPConnectionWithTimeout
-    httplib2.HTTPSConnectionWithTimeout = HTTPSConnectionWithTimeout
+    SCHEME_TO_CONNECTION['http'] =  HTTPConnectionWithTimeout
+    SCHEME_TO_CONNECTION['https'] = HTTPSConnectionWithTimeout
