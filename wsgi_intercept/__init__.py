@@ -135,8 +135,6 @@ mechanize
 mechanize_ is John J. Lee's port of Perl's WWW::Mechanize to Python.
 It mimics a browser.  (It's also what's behind twill_.)
 
-mechanize is just as easy as mechanoid: ::
-
    >>> import wsgi_intercept.mechanize_intercept
    >>> from wsgi_intercept.test_wsgi_app import create_fn
    >>> wsgi_intercept.add_wsgi_intercept('some_host', 80, create_fn)
@@ -146,21 +144,6 @@ mechanize is just as easy as mechanoid: ::
    'WSGI intercept successful!\\n'
 
 .. _mechanize: http://wwwsearch.sf.net/
-
-mechanoid
----------
-
-mechanoid_ is a fork of mechanize_. ::
-
-   >>> import wsgi_intercept.mechanoid_intercept
-   >>> from wsgi_intercept.test_wsgi_app import create_fn
-   >>> wsgi_intercept.add_wsgi_intercept('some_host', 80, create_fn)
-   >>> b = wsgi_intercept.mechanoid_intercept.Browser()
-   >>> response = b.open('http://some_host:80')
-   >>> response.read()
-   'WSGI intercept successful!\\n'
-   
-.. _mechanoid: http://www.python.org/pypi/mechanoid/
 
 zope.testbrowser
 ----------------
