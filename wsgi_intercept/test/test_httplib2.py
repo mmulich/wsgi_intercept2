@@ -1,38 +1,56 @@
-#! /usr/bin/env python2.4
-from wsgi_intercept import httplib2_intercept
-from nose.tools import with_setup, raises, eq_
 from socket import gaierror
 import wsgi_intercept
-from wsgi_intercept import test_wsgi_app
-import httplib2
+from wsgi_intercept import testing
+from wsgi_intercept.testing import unittest
 
-_saved_debuglevel = None
+try:
+    import httplib2
+    has_httplib2 = True
+except ImportError:
+    has_httplib2 = False
+_skip_message = "httplib2 is not installed"
 
 
-def install(port=80):
-    _saved_debuglevel, wsgi_intercept.debuglevel = wsgi_intercept.debuglevel, 1
-    httplib2_intercept.install()
-    wsgi_intercept.add_wsgi_intercept('some_hopefully_nonexistant_domain', port, test_wsgi_app.create_fn)
+class Httplib2BaseMixin:
+    port = 0
 
-def uninstall():
-    wsgi_intercept.debuglevel = _saved_debuglevel
-    httplib2_intercept.uninstall()
+    @property
+    def connection_cls(self):
+        from httplib2 import Http
+        return Http
 
-@with_setup(install, uninstall)
-def test_success():
-    http = httplib2.Http()
-    resp, content = http.request('http://some_hopefully_nonexistant_domain:80/', 'GET')
-    eq_(content, "WSGI intercept successful!\n")
-    assert test_wsgi_app.success()
+    def setUp(self):
+        # Install the intercept
+        from wsgi_intercept import httplib2_intercept
+        httplib2_intercept.install()
+        # Add the intercept for a nonexistant domain
+        self.domain = 'some_hopefully_nonexistant_domain'
+        wsgi_intercept.add_wsgi_intercept(self.domain, self.port,
+                                          testing.create_fn)
+        self.addCleanup(wsgi_intercept.remove_wsgi_intercept,
+                        self.domain, self.port)
+        # Cleanup with an intercept uninstall
+        self.addCleanup(httplib2_intercept.uninstall)
 
-@with_setup(install, uninstall)
-@raises(gaierror)
-def test_bogus_domain():
-    wsgi_intercept.debuglevel = 1;
-    httplib2_intercept.HTTP_WSGIInterceptorWithTimeout("_nonexistant_domain_").connect()
+    def test_success(self):
+        http = self.connection_cls()
+        url = 'http://%s:%s/' % (self.domain, self.port)
+        resp, content = http.request(url, 'GET')
+        self.assertEqual(content, "WSGI intercept successful!\n")
+        self.assertTrue(test_wsgi_app.success())
 
-@with_setup(lambda: install(443), uninstall)
-def test_https_success():
-    http = httplib2.Http()
-    resp, content = http.request('https://some_hopefully_nonexistant_domain/', 'GET')
-    assert test_wsgi_app.success()
+
+@unittest.skipUnless(has_httplib2, _skip_message)
+class Httplib2HttpTestCase(Httplib2BaseMixin, unittest.TestCase):
+    port = 80
+
+    def test_bogus_domain(self):
+        wsgi_intercept.debuglevel = 1;
+        from wsgi_intercept.httplib2_intercept import HTTP_WSGIInterceptorWithTimeout
+        with self.assertRaises(gaierror):
+            HTTP_WSGIInterceptorWithTimeout("_nonexistant_domain_").connect()
+
+
+@unittest.skipUnless(has_httplib2, _skip_message)
+class Httplib2HttpsTestCase(Httplib2BaseMixin, unittest.TestCase):
+    port = 443

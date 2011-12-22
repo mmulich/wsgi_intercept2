@@ -12,10 +12,6 @@ class HttpTestCase(unittest.TestCase):
         return httplib.HTTPConnection
 
     def setUp(self):
-        _saved_debuglevel = wsgi_intercept.debuglevel
-        wsgi_intercept.debuglevel = 1
-        self.addCleanup(setattr,
-                        wsgi_intercept, 'debuglevel', _saved_debuglevel)
         # Install the intercept
         from wsgi_intercept import httplib_intercept
         httplib_intercept.install()
