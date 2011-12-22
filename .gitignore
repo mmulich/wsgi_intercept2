@@ -8,6 +8,7 @@ dist/*
 # Testing #
 ###########
 .tox
+*.egg
 
 # Emacs #
 #########
