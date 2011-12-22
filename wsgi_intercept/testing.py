@@ -1,6 +1,23 @@
 """
-A simple WSGI application for testing.
+A module to support this packages tests. The functionality found here can
+also be used in packages that may depend on this one.
+
+Contains
+--------
+
+- A simple WSGI application for testing.
+- unittest2 indirection
 """
+import sys
+
+if sys.version_info >= (2, 7) and not sys.version_info <= (3, 1):
+    try:
+        import unittest2 as unittest
+    except ImportError:
+        raise RuntimeError("Missing dependency: unittest2")
+else:
+    import unittest
+
 
 _app_was_hit = False
 
