@@ -1,40 +1,12 @@
-
+import os
 from setuptools import setup, find_packages
-import compiler, pydoc
-from compiler import visitor
 
-class ModuleVisitor(object):
-    def __init__(self):
-        self.mod_doc = None
-        self.mod_version = None
-    def default(self, node):
-        for child in node.getChildNodes():
-            self.visit(child)
-    def visitModule(self, node):
-        self.mod_doc = node.doc
-        self.default(node)
-    def visitAssign(self, node):
-        if self.mod_version:
-            return
-        asn = node.nodes[0]
-        assert asn.name == '__version__', (
-            "expected __version__ node: %s" % asn)
-        self.mod_version = node.expr.value
-        self.default(node)
-        
-def get_module_meta(modfile):
-    ast = compiler.parseFile(modfile)
-    modnode = ModuleVisitor()
-    visitor.walk(ast, modnode)
-    if modnode.mod_doc is None:
-        raise RuntimeError(
-            "could not parse doc string from %s" % modfile)
-    if modnode.mod_version is None:
-        raise RuntimeError(
-            "could not parse __version__ from %s" % modfile)
-    return (modnode.mod_version,) + pydoc.splitdoc(modnode.mod_doc)
+version = '1.0a1'
+description = "installs a WSGI application in place of a real URI for testing"
 
-version, description, long_description = get_module_meta("./wsgi_intercept/__init__.py")
+here = os.path.dirname(__file__)
+readme = os.path.join(here, "wsgi_intercept", "README.rst")
+long_description = open(readme).read()
 
 setup(
     name = 'wsgi_intercept',
@@ -47,5 +19,14 @@ setup(
     license = 'MIT License',
     packages = find_packages(),
     test_suite = "nose.collector",
-    tests_require=['nose', 'Paste', 'httplib2', 'mechanize', 'mechanoid', 'WebTest', 'zope.testbrowser', 'webunit'],
+    tests_require=[
+        'nose',
+        'Paste',
+        'httplib2',
+        'mechanize',
+        'mechanoid',
+        'WebTest',
+        'zope.testbrowser',
+        'webunit',
+        ],
     )
