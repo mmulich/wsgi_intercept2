@@ -1,0 +1,19 @@
+# Development #
+###############
+*.pyc
+docs/_build
+*.egg-info
+dist/*
+
+# Testing #
+###########
+.tox
+
+# Emacs #
+#########
+*~
+
+# Coverage #
+############
+.coverage
+htmlcov
