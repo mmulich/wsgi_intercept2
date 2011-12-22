@@ -1,8 +1,8 @@
 import sys
-from httplib import HTTPConnection
 import urllib
-from cStringIO import StringIO
 import traceback
+from cStringIO import StringIO
+from httplib import HTTPConnection, HTTPSConnection
 
 debuglevel = 0
 # 1 basic
@@ -33,7 +33,8 @@ def add_wsgi_intercept(host, port, app_create_fn, script_name=''):
 
 def remove_wsgi_intercept(*args):
     """
-    Remove the WSGI intercept call for (host, port).  If no arguments are given, removes all intercepts
+    Remove the WSGI intercept call for (host, port).  If no arguments are
+    given, removes all intercepts
     """
     global _wsgi_intercept
     if len(args)==0:
@@ -120,7 +121,8 @@ def make_environ(inp, host, port, script_name):
         query_string = url[1]
 
     if debuglevel:
-        print "method: %s; script_name: %s; path_info: %s; query_string: %s" % (method, script_name, path_info, query_string)
+        print "method: %s; script_name: %s; path_info: %s; query_string: %s" \
+            % (method, script_name, path_info, query_string)
 
     r = inp.read()
     inp = StringIO(r)
@@ -348,54 +350,50 @@ class WSGI_HTTPConnection(HTTPConnection):
 # WSGI_HTTPSConnection
 #
 
-try:
-    from httplib import HTTPSConnection
-except ImportError:
-    pass
-else:
-    class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
+class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
+    """
+    Intercept all traffic to certain hosts & redirect into a WSGI
+    application object.
+    """
+
+    def get_app(self, host, port):
         """
-        Intercept all traffic to certain hosts & redirect into a WSGI
-        application object.
+        Return the app object for the given (host, port).
         """
-        def get_app(self, host, port):
-            """
-            Return the app object for the given (host, port).
-            """
-            key = (host, int(port))
-    
-            app, script_name = None, None
-            
-            if _wsgi_intercept.has_key(key):
-                (app_fn, script_name) = _wsgi_intercept[key]
-                app = app_fn()
-    
-            return app, script_name        
-        
-        def connect(self):
-            """
-            Override the connect() function to intercept calls to certain
-            host/ports.
-            
-            If no app at host/port has been registered for interception then 
-            a normal HTTPSConnection is made.
-            """
-            if debuglevel:
-                sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
-                                 
-            try:
-                (app, script_name) = self.get_app(self.host, self.port)
-                if app:
-                    if debuglevel:
-                        sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
-                                         (self.host, self.port,))
-                    self.sock = wsgi_fake_socket(app, self.host, self.port,
-                                                 script_name)
-                else:
-                    HTTPSConnection.connect(self)
-                    
-            except Exception, e:
-                if debuglevel:              # intercept & print out tracebacks
-                    traceback.print_exc()
-                raise
+        key = (host, int(port))
+
+        app, script_name = None, None
+
+        if _wsgi_intercept.has_key(key):
+            (app_fn, script_name) = _wsgi_intercept[key]
+            app = app_fn()
+
+        return app, script_name        
+
+    def connect(self):
+        """
+        Override the connect() function to intercept calls to certain
+        host/ports.
+
+        If no app at host/port has been registered for interception then 
+        a normal HTTPSConnection is made.
+        """
+        if debuglevel:
+            sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
+
+        try:
+            (app, script_name) = self.get_app(self.host, self.port)
+            if app:
+                if debuglevel:
+                    sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
+                                     (self.host, self.port,))
+                self.sock = wsgi_fake_socket(app, self.host, self.port,
+                                             script_name)
+            else:
+                HTTPSConnection.connect(self)
+
+        except Exception, e:
+            if debuglevel:              # intercept & print out tracebacks
+                traceback.print_exc()
+            raise
 
