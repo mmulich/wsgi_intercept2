@@ -2,14 +2,14 @@ import httplib
 import wsgi_intercept
 from wsgi_intercept import testing
 from wsgi_intercept.testing import unittest
+from wsgi_intercept.test import base
 
 
-class HttpTestCase(unittest.TestCase):
+class HttpTestCase(base.BaseTestCase):
     port = 80
 
-    @property
-    def connection_cls(self):
-        return httplib.HTTPConnection
+    def make_one(self, *args):
+        return httplib.HTTPConnection(*args)
 
     def setUp(self):
         # Install the intercept
@@ -25,7 +25,7 @@ class HttpTestCase(unittest.TestCase):
         self.addCleanup(httplib_intercept.uninstall)
 
     def test_success(self):
-        http = self.connection_cls(self.domain)
+        http = self.make_one(self.domain)
         http.request('GET', '/')
         content = http.getresponse().read()
         self.assertEqual(content, 'WSGI intercept successful!\n')
@@ -35,6 +35,5 @@ class HttpTestCase(unittest.TestCase):
 class HttpsTestCase(HttpTestCase):
     port = 443
 
-    @property
-    def connection_cls(self):
-        return httplib.HTTPSConnection
+    def make_one(self, *args):
+        return httplib.HTTPSConnection(*args)
