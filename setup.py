@@ -8,6 +8,26 @@ here = os.path.dirname(__file__)
 readme = os.path.join(here, "README.rst")
 long_description = open(readme).read()
 
+tests_require = [
+    'nose',
+    'Paste',
+    'httplib2',
+    'mechanize',
+    'mechanoid',
+    'WebTest',
+    'zope.testbrowser',
+    'webunit',
+    ]
+extras_require = {
+    'test': test_require,
+    'httplib2': ['httplib2'],
+    'zope.testbrowser': ['zope.testbrowser', 'mechanize>=0.1.7',],
+    'webunit': ['webunit'],
+    'webtest': ['WebTest'],  # conventionally extras are lowercase
+    'mechanoid': ['mechanoid'],
+    'paste': ['Paste'],
+    }
+
 setup(
     name='wsgi_intercept',
     version=version,
@@ -18,15 +38,7 @@ setup(
     long_description=long_description,
     license='MIT License',
     packages=find_packages(),
+    extras_require=extras_require,
     test_suite="nose.collector",
-    tests_require=[
-        'nose',
-        'Paste',
-        'httplib2',
-        'mechanize',
-        'mechanoid',
-        'WebTest',
-        'zope.testbrowser',
-        'webunit',
-        ],
+    tests_require=tests_require,
     )
