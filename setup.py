@@ -5,7 +5,7 @@ version = '1.0a1'
 description = "installs a WSGI application in place of a real URI for testing"
 
 here = os.path.dirname(__file__)
-readme = os.path.join(here, "wsgi_intercept", "README.rst")
+readme = os.path.join(here, "README.rst")
 long_description = open(readme).read()
 
 setup(
