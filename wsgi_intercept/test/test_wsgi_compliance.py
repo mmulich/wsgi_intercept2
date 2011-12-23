@@ -3,9 +3,6 @@ from wsgi_intercept import testing
 from wsgi_intercept.testing import unittest
 from wsgi_intercept.test import base
 
-import wsgi_intercept
-from paste import lint
-
 try:
     import httplib2
     has_httplib2 = True
@@ -26,16 +23,18 @@ class BaseComplianceCase(base.BaseTestCase):
     port = 80
 
     def setUp(self):
+        super(BaseComplianceCase, self).setUp()
         warnings.simplefilter("error")
         self.addCleanup(warnings.resetwarnings)
-        # Set up a prudent WSGI application 
-        prudent_wsgi_app = lambda: lint.middleware(testing.create_fn())
-        self.wsgi_app = prudent_wsgi_app
-        super(BaseComplianceCase, self).setUp()
         # Intercept httplib2 requests
         from wsgi_intercept.httplib2_intercept import install, uninstall
         install()
         self.addCleanup(uninstall)
+
+    @property
+    def wsgi_app(self):
+        # Set up a prudent WSGI application 
+        return lambda: lint.middleware(testing.create_fn())
 
     def make_one(self, *args):
         from httplib2 import Http
@@ -43,12 +42,6 @@ class BaseComplianceCase(base.BaseTestCase):
 
 
 class ComplianceTestCase(BaseComplianceCase):
-
-    def setUp(self):
-        # Set up a prudent WSGI application 
-        prudent_wsgi_app = lambda: lint.middleware(testing.create_fn())
-        self.wsgi_app = prudent_wsgi_app
-        super(ComplianceTestCase, self).setUp()
 
     def test_success(self):
         http = self.make_one()
@@ -61,7 +54,11 @@ class QuotingComplianceTestCase(BaseComplianceCase):
     # https://github.com/pumazi/wsgi_intercept2/issues/11
 
     def setUp(self):
+        super(QuotingComplianceTestCase, self).setUp()
         self.inspected_env = {}
+
+    @property
+    def wsgi_app(self):
         def make_path_checking_app():
             def path_checking_app(environ, start_response):
                 self.inspected_env['QUERY_STRING'] = environ['QUERY_STRING']
@@ -72,12 +69,11 @@ class QuotingComplianceTestCase(BaseComplianceCase):
                 return []
             return path_checking_app
         # Reassign the WSGI application
-        self.wsgi_app = make_path_checking_app
-        super(QuotingComplianceTestCase, self).setUp()
+        return make_path_checking_app
 
     def test_quoting_issue11(self):
         http = self.make_one()
-        url = '%sspaced+words.html?word=something%20spaced' % self.url
+        url = self.url + 'spaced+words.html?word=something%20spaced'
         resp, content = http.request(url, 'GET')
         
         self.assertTrue('QUERY_STRING' in self.inspected_env,

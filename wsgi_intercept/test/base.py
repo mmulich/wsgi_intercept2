@@ -9,9 +9,13 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         import wsgi_intercept
         wsgi_intercept.add_wsgi_intercept(self.domain, self.port,
-                                          testing.create_fn)
+                                          self.wsgi_app)
         self.addCleanup(wsgi_intercept.remove_wsgi_intercept,
                         self.domain, self.port)
+
+    @property
+    def wsgi_app(self):
+        return testing.create_fn
 
     def make_one(self, *args):
         raise NotImplementedError
