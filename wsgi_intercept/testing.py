@@ -8,6 +8,7 @@ Contains
 - A simple WSGI application for testing.
 - unittest2 indirection
 """
+import os
 import sys
 
 if sys.version_info >= (2, 7) and not sys.version_info <= (3, 1):
@@ -17,6 +18,12 @@ if sys.version_info >= (2, 7) and not sys.version_info <= (3, 1):
         raise RuntimeError("Missing dependency: unittest2")
 else:
     import unittest
+
+
+_value = os.environ.get('FUNKY_DNS_RESOLUTION', None)
+has_funky_dns_resolution = _value is None and False or True
+_dns_skip_message = "DNS resolves any given name. Therefore, the results of this test are invalid."
+funky_dns_resolution = (has_funky_dns_resolution, _dns_skip_message,)
 
 
 _app_was_hit = False

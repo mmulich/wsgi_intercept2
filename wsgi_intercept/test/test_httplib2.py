@@ -1,4 +1,3 @@
-import os
 from socket import gaierror
 from wsgi_intercept import testing
 from wsgi_intercept.testing import unittest
@@ -11,16 +10,11 @@ except ImportError:
     has_httplib2 = False
 _skip_message = "httplib2 is not installed"
 
-_value = os.environ.get('FUNKY_DNS_RESOLUTION', None)
-has_funky_dns_resolution = _value is None and False or True
-_isp_skip_message = "DNS resolves any given name. Therefore, the results of this test are invalid."
-
-
 @unittest.skipUnless(has_httplib2, _skip_message)
 class Httplib2HttpTestCase(base.BaseHttplib2TestCase):
     port = 80
 
-    @unittest.skipIf(has_funky_dns_resolution, _isp_skip_message)
+    @unittest.skipIf(*testing.funky_dns_resolution)
     def test_bogus_domain(self):
         from wsgi_intercept.httplib2_intercept import HTTP_WSGIInterceptorWithTimeout
         with self.assertRaises(gaierror):
