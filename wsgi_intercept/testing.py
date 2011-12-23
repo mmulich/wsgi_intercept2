@@ -20,9 +20,13 @@ else:
     import unittest
 
 
+# Some tests will fail if your ISP or DNS provider resolves
+#   all names. For example, Verizon resolves all names and in most
+#   cases tries to redirect you to a web search page.
 _value = os.environ.get('FUNKY_DNS_RESOLUTION', None)
 has_funky_dns_resolution = _value is None and False or True
 _dns_skip_message = "DNS resolves any given name. Therefore, the results of this test are invalid."
+#: Usage would be something like: @unitest.skipIf(*testing.funky_dns_resolution)
 funky_dns_resolution = (has_funky_dns_resolution, _dns_skip_message,)
 
 

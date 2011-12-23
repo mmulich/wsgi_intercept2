@@ -10,6 +10,7 @@ except ImportError:
     has_httplib2 = False
 _skip_message = "httplib2 is not installed"
 
+
 @unittest.skipUnless(has_httplib2, _skip_message)
 class Httplib2HttpTestCase(base.BaseHttplib2TestCase):
     port = 80
@@ -18,10 +19,6 @@ class Httplib2HttpTestCase(base.BaseHttplib2TestCase):
     def test_bogus_domain(self):
         from wsgi_intercept.httplib2_intercept import HTTP_WSGIInterceptorWithTimeout
         with self.assertRaises(gaierror):
-            # NOTE This test will fail if your ISP or DNS provider resolves
-            #   all names. For example, Verizon resolves all names and in most
-            #   cases tries to redirect you to a web search page.
-            #   See also the unittest skip message.
             HTTP_WSGIInterceptorWithTimeout("_nonexistant_domain_").connect()
 
 

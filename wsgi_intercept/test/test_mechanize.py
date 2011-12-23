@@ -24,6 +24,7 @@ class MechanizeHttpTestCase(base.BaseTestCase):
         b.open(self.url)
         self.assertTrue(testing.success())
 
+    @unittest.skipIf(*testing.funky_dns_resolution)
     def test_intercept_removed(self):
         from wsgi_intercept import remove_wsgi_intercept
         remove_wsgi_intercept()
