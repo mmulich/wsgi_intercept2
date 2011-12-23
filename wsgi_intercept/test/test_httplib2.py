@@ -10,22 +10,8 @@ except ImportError:
 _skip_message = "httplib2 is not installed"
 
 
-class Httplib2BaseMixin:
-    port = 0
-
-    def make_one(self, *args):
-        from httplib2 import Http
-        return Http(*args)
-
-    def test_success(self):
-        http = self.make_one()
-        resp, content = http.request(self.url, 'GET')
-        self.assertEqual(content, "WSGI intercept successful!\n")
-        self.assertTrue(test_wsgi_app.success())
-
-
 @unittest.skipUnless(has_httplib2, _skip_message)
-class Httplib2HttpTestCase(Httplib2BaseMixin, base.BaseTestCase):
+class Httplib2HttpTestCase(base.BaseHttplib2TestCase):
     port = 80
 
     def test_bogus_domain(self):
@@ -35,5 +21,5 @@ class Httplib2HttpTestCase(Httplib2BaseMixin, base.BaseTestCase):
 
 
 @unittest.skipUnless(has_httplib2, _skip_message)
-class Httplib2HttpsTestCase(Httplib2BaseMixin, base.BaseTestCase):
+class Httplib2HttpsTestCase(base.BaseHttplib2TestCase):
     port = 443
