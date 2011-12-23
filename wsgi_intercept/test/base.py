@@ -5,11 +5,12 @@ from wsgi_intercept.testing import unittest
 class BaseTestCase(unittest.TestCase):
     port = 80
     domain = 'some_hopefully_nonexistant_domain'
+    wsgi_app = testing.create_fn
 
     def setUp(self):
         import wsgi_intercept
         wsgi_intercept.add_wsgi_intercept(self.domain, self.port,
-                                          testing.create_fn)
+                                          self.wsgi_app)
         self.addCleanup(wsgi_intercept.remove_wsgi_intercept,
                         self.domain, self.port)
 
