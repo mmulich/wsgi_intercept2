@@ -15,6 +15,13 @@ _skip_message = "mechanize is not installed"
 class MechanizeHttpTestCase(base.BaseTestCase):
     port = 80
 
+    def setUp(self):
+        super(MechanizeHttpTestCase, self).setUp()
+        from wsgi_intercept.mechanize_intercept import install
+        from wsgi_intercept.mechanize_intercept import uninstall
+        install()
+        self.addCleanup(uninstall)
+
     def make_one(self, *args):
         from mechanize import Browser
         return Browser(*args)

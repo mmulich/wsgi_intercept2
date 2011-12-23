@@ -2,8 +2,8 @@
 A mechanize browser that redirects specified HTTP connections to a WSGI
 object.
 """
-
 from httplib import HTTP
+import mechanize
 from mechanize import Browser as MechanizeBrowser
 from wsgi_intercept.urllib2_intercept import install_opener, uninstall_opener
 try:
@@ -13,8 +13,8 @@ except ImportError:
     # (this will break if it is combined with a newer mechanize)
     from ClientCookie import HTTPHandler
 
-import sys, os.path
 from wsgi_intercept.urllib2_intercept import WSGI_HTTPHandler, WSGI_HTTPSHandler
+
 
 class Browser(MechanizeBrowser):
     """
@@ -24,10 +24,12 @@ class Browser(MechanizeBrowser):
     handler_classes = MechanizeBrowser.handler_classes.copy()
     handler_classes['http'] = WSGI_HTTPHandler
     handler_classes['https'] = WSGI_HTTPSHandler
-    def __init__(self, *args, **kwargs):
-        # install WSGI intercept handler.
-        install(self)
-        MechanizeBrowser.__init__(self, *args, **kwargs)
 
-def install(browser):
+
+def install():
+    mechanize.Browser = Browser
     install_opener()
+
+def uninstall():
+    mechanize.Browser = MechanizeBrowser
+    uninstall_opener()
