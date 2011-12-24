@@ -19,7 +19,7 @@ tests_require = [
     'webunit',
     ]
 extras_require = {
-    'test': test_require,
+    'test': tests_require,
     'httplib2': ['httplib2'],
     'zope.testbrowser': ['zope.testbrowser', 'mechanize>=0.1.7',],
     'webunit': ['webunit'],
