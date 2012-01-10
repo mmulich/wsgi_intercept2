@@ -1,8 +1,8 @@
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import traceback
-from cStringIO import StringIO
-from httplib import HTTPConnection, HTTPSConnection
+from io import StringIO
+from http.client import HTTPConnection, HTTPSConnection
 
 debuglevel = 0
 # 1 basic
@@ -41,7 +41,7 @@ def remove_wsgi_intercept(*args):
         _wsgi_intercept = {}
     else:
         key = (args[0], args[1])
-        if _wsgi_intercept.has_key(key):
+        if key in _wsgi_intercept:
             del _wsgi_intercept[key]
 
 #
@@ -97,14 +97,14 @@ def make_environ(inp, host, port, script_name):
             environ['HTTP_' + h] = v
             
         if debuglevel >= 2:
-            print 'HEADER:', k, v
+            print('HEADER:', k, v)
 
     #
     # decode the method line
     #
 
     if debuglevel >= 2:
-        print 'METHOD LINE:', method_line
+        print('METHOD LINE:', method_line)
         
     method, url, protocol = method_line.split(' ')
 
@@ -121,8 +121,8 @@ def make_environ(inp, host, port, script_name):
         query_string = url[1]
 
     if debuglevel:
-        print "method: %s; script_name: %s; path_info: %s; query_string: %s" \
-            % (method, script_name, path_info, query_string)
+        print("method: %s; script_name: %s; path_info: %s; query_string: %s" \
+            % (method, script_name, path_info, query_string))
 
     r = inp.read()
     inp = StringIO(r)
@@ -159,11 +159,11 @@ def make_environ(inp, host, port, script_name):
     if content_type:
         environ['CONTENT_TYPE'] = content_type
         if debuglevel >= 2:
-            print 'CONTENT-TYPE:', content_type
+            print('CONTENT-TYPE:', content_type)
     if content_length:
         environ['CONTENT_LENGTH'] = content_length
         if debuglevel >= 2:
-            print 'CONTENT-LENGTH:', content_length
+            print('CONTENT-LENGTH:', content_length)
 
     #
     # handle cookies.
@@ -172,7 +172,7 @@ def make_environ(inp, host, port, script_name):
         environ['HTTP_COOKIE'] = "; ".join(cookies)
 
     if debuglevel:
-        print 'WSGI environ dictionary:', environ
+        print('WSGI environ dictionary:', environ)
 
     return environ
 
@@ -258,7 +258,7 @@ class wsgi_fake_socket:
         try:
             generator_data = None
             try:
-                generator_data = self.result.next()
+                generator_data = next(self.result)
 
             finally:
                 for data in self.write_results:
@@ -268,7 +268,7 @@ class wsgi_fake_socket:
                 self.output.write(generator_data)
 
                 while 1:
-                    data = self.result.next()
+                    data = next(self.result)
                     self.output.write(data)
                     
         except StopIteration:
@@ -278,7 +278,7 @@ class wsgi_fake_socket:
             app_result.close()
             
         if debuglevel >= 2:
-            print "***", self.output.getvalue(), "***"
+            print("***", self.output.getvalue(), "***")
 
         # return the concatenated results.
         return StringIO(self.output.getvalue())
@@ -288,7 +288,7 @@ class wsgi_fake_socket:
         Save all the traffic to self.inp.
         """
         if debuglevel >= 2:
-            print ">>>", str, ">>>"
+            print(">>>", str, ">>>")
 
         self.inp.write(str)
 
@@ -313,7 +313,7 @@ class WSGI_HTTPConnection(HTTPConnection):
 
         app, script_name = None, None
         
-        if _wsgi_intercept.has_key(key):
+        if key in _wsgi_intercept:
             (app_fn, script_name) = _wsgi_intercept[key]
             app = app_fn()
 
@@ -341,7 +341,7 @@ class WSGI_HTTPConnection(HTTPConnection):
             else:
                 HTTPConnection.connect(self)
                 
-        except Exception, e:
+        except Exception as e:
             if debuglevel:              # intercept & print out tracebacks
                 traceback.print_exc()
             raise
@@ -364,7 +364,7 @@ class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
 
         app, script_name = None, None
 
-        if _wsgi_intercept.has_key(key):
+        if key in _wsgi_intercept:
             (app_fn, script_name) = _wsgi_intercept[key]
             app = app_fn()
 
@@ -392,7 +392,7 @@ class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
             else:
                 HTTPSConnection.connect(self)
 
-        except Exception, e:
+        except Exception as e:
             if debuglevel:              # intercept & print out tracebacks
                 traceback.print_exc()
             raise

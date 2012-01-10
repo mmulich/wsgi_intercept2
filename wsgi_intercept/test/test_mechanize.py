@@ -1,4 +1,4 @@
-from urllib2 import URLError
+from urllib.error import URLError
 from wsgi_intercept import testing
 from wsgi_intercept.testing import unittest
 from wsgi_intercept.test import base

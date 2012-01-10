@@ -14,7 +14,7 @@ import sys
 sys.path.insert(0, 'urllib2')
 
 import unittest
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import wsgi_intercept
 from wsgi_intercept import urllib2_intercept as wsgi_urllib2
 
@@ -63,7 +63,7 @@ class MockHttpServerTest(unittest.TestCase):
         self.server = MockHttpServer()
         
     def test_simple_get(self):
-        result = urllib2.urlopen('http://localhost:8000/')
+        result = urllib.request.urlopen('http://localhost:8000/')
         self.assertEqual(result.read(), test_page)
 
 if __name__ == "__main__":

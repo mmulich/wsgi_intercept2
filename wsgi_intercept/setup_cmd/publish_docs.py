@@ -90,9 +90,9 @@ class WikiVisitor(SparseNodeVisitor):
             self.indent = ' ' * self.list_depth
         
     def visit_reference(self, node):
-        if node.has_key('refuri'):
+        if 'refuri' in node:
             href = node['refuri']
-        elif node.has_key('refid'):
+        elif 'refid' in node:
             href = '#' + node['refid']
         else:
             href = None
@@ -173,7 +173,7 @@ class publish_docs(Command):
     def run(self):        
         summary, doc = pydoc.splitdoc(wsgi_intercept.__doc__)
         wikidoc = publish_string(doc, writer=WikiWriter())
-        print wikidoc
+        print(wikidoc)
         
         ## Google html is so broken that this isn't working :/
         

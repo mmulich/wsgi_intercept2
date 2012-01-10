@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import wsgi_intercept
 from wsgi_intercept import testing
 from wsgi_intercept.testing import unittest
@@ -9,7 +9,7 @@ class HttpTestCase(base.BaseTestCase):
     port = 80
 
     def make_one(self, *args):
-        return httplib.HTTPConnection(*args)
+        return http.client.HTTPConnection(*args)
 
     def setUp(self):
         # Install the intercept
@@ -36,4 +36,4 @@ class HttpsTestCase(HttpTestCase):
     port = 443
 
     def make_one(self, *args):
-        return httplib.HTTPSConnection(*args)
+        return http.client.HTTPSConnection(*args)

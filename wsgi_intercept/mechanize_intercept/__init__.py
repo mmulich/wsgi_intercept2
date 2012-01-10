@@ -3,4 +3,4 @@
 (see wsgi_intercept/__init__.py for examples)
 
 """
-from wsgi_browser import *
+from .wsgi_browser import *

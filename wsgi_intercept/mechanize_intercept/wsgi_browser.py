@@ -2,7 +2,7 @@
 A mechanize browser that redirects specified HTTP connections to a WSGI
 object.
 """
-from httplib import HTTP
+from http.client import HTTP
 import mechanize
 from mechanize import Browser as MechanizeBrowser
 from wsgi_intercept.urllib2_intercept import install_opener, uninstall_opener

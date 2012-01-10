@@ -1,5 +1,5 @@
-import urllib2
-from urllib2 import HTTPHandler, HTTPSHandler
+import urllib.request, urllib.error, urllib.parse
+from urllib.request import HTTPHandler, HTTPSHandler
 from wsgi_intercept import WSGI_HTTPConnection, WSGI_HTTPSConnection
 
 
@@ -27,9 +27,9 @@ def install_opener():
     handlers = [WSGI_HTTPHandler()]
     if WSGI_HTTPSHandler is not None:
         handlers.append(WSGI_HTTPSHandler())
-    opener = urllib2.build_opener(*handlers)
-    urllib2.install_opener(opener)
+    opener = urllib.request.build_opener(*handlers)
+    urllib.request.install_opener(opener)
     return opener
 
 def uninstall_opener():
-    urllib2.install_opener(None)
+    urllib.request.install_opener(None)

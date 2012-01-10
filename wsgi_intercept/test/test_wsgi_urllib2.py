@@ -1,4 +1,4 @@
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from wsgi_intercept import testing
 from wsgi_intercept.test import base
 
@@ -13,13 +13,13 @@ class Urllib2HttpTestCase(base.BaseTestCase):
         self.addCleanup(uninstall_opener)
 
     def test_success(self):
-        urllib2.urlopen(self.url)
+        urllib.request.urlopen(self.url)
         self.assertTrue(testing.success())
 
     def test_default_port(self):
         url = self.url
         url.replace(':%s' % self.port, '')
-        urllib2.urlopen(url)
+        urllib.request.urlopen(url)
         self.assertTrue(testing.success())
 
 

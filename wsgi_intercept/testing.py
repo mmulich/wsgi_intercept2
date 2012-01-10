@@ -10,14 +10,7 @@ Contains
 """
 import os
 import sys
-
-if sys.version_info >= (2, 7) and not sys.version_info <= (3, 1):
-    try:
-        import unittest2 as unittest
-    except ImportError:
-        raise RuntimeError("Missing dependency: unittest2")
-else:
-    import unittest
+import unittest
 
 
 # Some tests will fail if your ISP or DNS provider resolves

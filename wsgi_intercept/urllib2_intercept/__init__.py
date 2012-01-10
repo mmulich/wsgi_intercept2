@@ -4,4 +4,4 @@
 (see wsgi_intercept/__init__.py for examples)
 
 """
-from wsgi_urllib2 import *
+from .wsgi_urllib2 import *
