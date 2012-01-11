@@ -28,7 +28,7 @@ class HttpTestCase(base.BaseTestCase):
         http = self.make_one(self.domain)
         http.request('GET', '/')
         content = http.getresponse().read()
-        self.assertEqual(content, 'WSGI intercept successful!\n')
+        self.assertEqual(content, b'WSGI intercept successful!\n')
         self.assertTrue(testing.success())
 
 

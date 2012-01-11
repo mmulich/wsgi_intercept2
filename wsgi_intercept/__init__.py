@@ -1,7 +1,7 @@
 import sys
 import urllib.request, urllib.parse, urllib.error
 import traceback
-from io import StringIO
+from io import BytesIO, StringIO
 from http.client import HTTPConnection, HTTPSConnection
 
 debuglevel = 0
@@ -44,6 +44,11 @@ def remove_wsgi_intercept(*args):
         if key in _wsgi_intercept:
             del _wsgi_intercept[key]
 
+
+def bytes_to_str(value):
+    """Convert a bytestring to a unicode string."""
+    return value.decode('utf-8')
+
 #
 # make_environ: behave like a Web server.  Take in 'input', and behave
 # as if you're bound to 'host' and 'port'; build an environment dict
@@ -61,30 +66,24 @@ def make_environ(inp, host, port, script_name):
     Set 'SCRIPT_NAME' from the 'script_name' input, and, if present,
     remove it from the beginning of the PATH_INFO variable.
     """
-    #
-    # parse the input up to the first blank line (or its end).
-    #
-
     environ = {}
-    
-    method_line = inp.readline()
-    
     content_type = None
     content_length = None
     cookies = []
+    method_line = bytes_to_str(inp.readline())    
     
+    # Parse the input up to the first blank line (or its end).
     for line in inp:
+        line = bytes_to_str(line)  # inp is a bytestring.
         if not line.strip():
+            # The HTTP protocol has a blank between the header information
+            # and the message body.
             break
-
         k, v = line.strip().split(':', 1)
         v = v.lstrip()
 
-        #
-        # take care of special headers, and for the rest, put them
-        # into the environ with HTTP_ in front.
-        #
-
+        # Take care of special headers. Put the remaining headers
+        # into the environ with the HTTP_ prefix.
         if k.lower() == 'content-type':
             content_type = v
         elif k.lower() == 'content-length':
@@ -95,25 +94,23 @@ def make_environ(inp, host, port, script_name):
             h = k.upper()
             h = h.replace('-', '_')
             environ['HTTP_' + h] = v
-            
+
         if debuglevel >= 2:
             print('HEADER:', k, v)
 
-    #
-    # decode the method line
-    #
-
+    # Decode the method line
     if debuglevel >= 2:
         print('METHOD LINE:', method_line)
-        
     method, url, protocol = method_line.split(' ')
 
-    # clean the script_name off of the url, if it's there.
+    # Capture and remove the script_name from the url, if it's there.
     if not url.startswith(script_name):
         script_name = ''                # @CTB what to do -- bad URL.  scrap?
     else:
         url = url[len(script_name):]
 
+    # Capture the query string that has optionally been passed along with
+    # the url.
     url = url.split('?', 1)
     path_info = url[0]
     query_string = ""
@@ -121,19 +118,17 @@ def make_environ(inp, host, port, script_name):
         query_string = url[1]
 
     if debuglevel:
+        # Print all know information.
         print("method: %s; script_name: %s; path_info: %s; query_string: %s" \
             % (method, script_name, path_info, query_string))
 
     r = inp.read()
-    inp = StringIO(r)
+    inp = BytesIO(r)
 
-    #
-    # fill out our dictionary.
-    #
-    
+    # Fill out our environment dictionary.
     environ.update({ "wsgi.version" : (1,0),
                      "wsgi.url_scheme": "http",
-                     "wsgi.input" : inp,           # to read for POSTs
+                     "wsgi.input" : inp,  # to read for POSTs
                      "wsgi.errors" : StringIO(),
                      "wsgi.multithread" : 0,
                      "wsgi.multiprocess" : 0,
@@ -149,13 +144,9 @@ def make_environ(inp, host, port, script_name):
                      "SERVER_PROTOCOL" : protocol,
                      })
 
-    #
-    # query_string, content_type & length are optional.
-    #
-
+    # Optional environment variables: query_string, content_type & length.
     if query_string:
-        environ['QUERY_STRING'] = query_string
-        
+        environ['QUERY_STRING'] = query_string        
     if content_type:
         environ['CONTENT_TYPE'] = content_type
         if debuglevel >= 2:
@@ -165,21 +156,16 @@ def make_environ(inp, host, port, script_name):
         if debuglevel >= 2:
             print('CONTENT-LENGTH:', content_length)
 
-    #
-    # handle cookies.
-    #
+    # Handle cookies.
     if cookies:
         environ['HTTP_COOKIE'] = "; ".join(cookies)
 
     if debuglevel:
         print('WSGI environ dictionary:', environ)
-
     return environ
 
-#
-# fake socket for WSGI intercept stuff.
-#
 
+# Fake socket for WSGI intercept stuff.
 class wsgi_fake_socket:
     """
     Handle HTTP traffic and stuff into a WSGI application object instead.
@@ -196,10 +182,10 @@ class wsgi_fake_socket:
         self.port = port
         self.script_name = script_name  # SCRIPT_NAME (app mount point)
 
-        self.inp = StringIO()           # stuff written into this "socket"
+        self.inp = BytesIO()           # stuff written into this "socket"
         self.write_results = []          # results from the 'write_fn'
         self.results = None             # results from running the app
-        self.output = StringIO()        # all output from the app, incl headers
+        self.output = BytesIO()        # all output from the app, incl headers
 
     def makefile(self, *args, **kwargs):
         """
@@ -217,16 +203,16 @@ class wsgi_fake_socket:
         @CTB: 'start_response' should return a function that writes
         directly to self.result, too.
         """
-
         # dynamically construct the start_response function for no good reason.
 
         def start_response(status, headers, exc_info=None):
             # construct the HTTP request.
-            self.output.write("HTTP/1.0 " + status + "\n")
+            self.output.write(b"HTTP/1.0 " + status.encode('iso-8859-1') + b"\n")
             
             for k, v in headers:
-                self.output.write('%s: %s\n' % (k, v,))
-            self.output.write('\n')
+                header_line = '%s: %s\n' % (k, v,)
+                self.output.write(header_line.encode('iso-8859-1'))
+            self.output.write(b'\n')
 
             def write_fn(s):
                 self.write_results.append(s)
@@ -234,7 +220,7 @@ class wsgi_fake_socket:
 
         # construct the wsgi.input file from everything that's been
         # written to this "socket".
-        inp = StringIO(self.inp.getvalue())
+        inp = BytesIO(self.inp.getvalue())
 
         # build the environ dictionary.
         environ = make_environ(inp, self.host, self.port, self.script_name)
@@ -259,18 +245,15 @@ class wsgi_fake_socket:
             generator_data = None
             try:
                 generator_data = next(self.result)
-
             finally:
                 for data in self.write_results:
                     self.output.write(data)
 
             if generator_data:
                 self.output.write(generator_data)
-
                 while 1:
                     data = next(self.result)
                     self.output.write(data)
-                    
         except StopIteration:
             pass
 
@@ -281,7 +264,7 @@ class wsgi_fake_socket:
             print("***", self.output.getvalue(), "***")
 
         # return the concatenated results.
-        return StringIO(self.output.getvalue())
+        return BytesIO(self.output.getvalue())
 
     def sendall(self, str):
         """
