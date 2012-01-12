@@ -2,6 +2,9 @@ import sys
 import urllib.request, urllib.parse, urllib.error
 import traceback
 from io import BytesIO, StringIO
+import socket
+import ssl
+from http.client import _strict_sentinel
 from http.client import HTTPConnection, HTTPSConnection
 
 debuglevel = 0
@@ -279,9 +282,6 @@ class wsgi_fake_socket:
         "Do nothing, for now."
         pass
 
-#
-# WSGI_HTTPConnection
-#
 
 class WSGI_HTTPConnection(HTTPConnection):
     """
@@ -329,15 +329,39 @@ class WSGI_HTTPConnection(HTTPConnection):
                 traceback.print_exc()
             raise
 
-#
-# WSGI_HTTPSConnection
-#
 
-class WSGI_HTTPSConnection(HTTPSConnection, WSGI_HTTPConnection):
+class WSGI_HTTPSConnection(HTTPSConnection):
     """
     Intercept all traffic to certain hosts & redirect into a WSGI
     application object.
     """
+
+    # XXX http://bugs.python.org/issue13771
+    def __init__(self, host, port=None, key_file=None, cert_file=None,
+                 strict=_strict_sentinel, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+                 source_address=None, *, context=None, check_hostname=None):
+        # The original line as of Python 3.2 reads:
+        # super(HTTPSConnection, self).__init__(host, port, strict, timeout,
+        #                                       source_address)
+        # We modify it to call the subclass directly to avoid a recursion error.
+        HTTPConnection.__init__(self, host, port, strict, timeout, source_address)
+
+        self.key_file = key_file
+        self.cert_file = cert_file
+        if context is None:
+            # Some reasonable defaults
+            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            context.options |= ssl.OP_NO_SSLv2
+        will_verify = context.verify_mode != ssl.CERT_NONE
+        if check_hostname is None:
+            check_hostname = will_verify
+        elif check_hostname and not will_verify:
+            raise ValueError("check_hostname needs a SSL context with "
+                             "either CERT_OPTIONAL or CERT_REQUIRED")
+        if key_file or cert_file:
+            context.load_cert_chain(cert_file, key_file)
+        self._context = context
+        self._check_hostname = check_hostname
 
     def get_app(self, host, port):
         """
