@@ -4,7 +4,7 @@ import traceback
 from socket import _GLOBAL_DEFAULT_TIMEOUT
 from io import BytesIO, StringIO
 from http.client import _strict_sentinel
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection
 
 
 debuglevel = 0
@@ -331,6 +331,7 @@ class WSGI_HTTPConnection(HTTPConnection):
 
 try:
     import ssl
+    from http.client import HTTPSConnection
 except ImportError:
     pass
 else:
