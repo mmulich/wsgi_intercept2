@@ -51,19 +51,10 @@ def bytes_to_str(value):
     """Convert a bytestring to a unicode string."""
     return value.decode('utf-8')
 
-#
-# make_environ: behave like a Web server.  Take in 'input', and behave
-# as if you're bound to 'host' and 'port'; build an environment dict
-# for the WSGI app.
-#
-# This is where the magic happens, folks.
-#
-
 def make_environ(inp, host, port, script_name):
     """
-    Take 'inp' as if it were HTTP-speak being received on host:port,
-    and parse it into a WSGI-ok environment dictionary.  Return the
-    dictionary.
+    Take `inp` (input) like a web server would receive it on a host and port.
+    Parse the input into a WSGI environment dictionary.
 
     Set 'SCRIPT_NAME' from the 'script_name' input, and, if present,
     remove it from the beginning of the PATH_INFO variable.
@@ -107,7 +98,7 @@ def make_environ(inp, host, port, script_name):
 
     # Capture and remove the script_name from the url, if it's there.
     if not url.startswith(script_name):
-        script_name = ''                # @CTB what to do -- bad URL.  scrap?
+        script_name = ''  # @CTB what to do -- bad URL.  scrap?
     else:
         url = url[len(script_name):]
 
@@ -323,7 +314,7 @@ class WSGI_HTTPConnection(HTTPConnection):
                 HTTPConnection.connect(self)
                 
         except Exception as e:
-            if debuglevel:              # intercept & print out tracebacks
+            if debuglevel:  # intercept & print out tracebacks
                 traceback.print_exc()
             raise
 
@@ -404,7 +395,7 @@ else:
                     HTTPSConnection.connect(self)
 
             except Exception as e:
-                if debuglevel:              # intercept & print out tracebacks
+                if debuglevel:  # intercept & print out tracebacks
                     traceback.print_exc()
                 raise
 
