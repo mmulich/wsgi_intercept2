@@ -25,28 +25,27 @@ debuglevel = 0
 #
 # (top_url becomes the SCRIPT_NAME)
 
-_wsgi_intercept = {}
+_intercepts = {}
 
-def add_wsgi_intercept(host, port, app_create_fn, script_name=''):
+def add_intercept(host, port, app_create_fn, script_name=''):
     """
     Add a WSGI intercept call for host:port, using the app returned
     by app_create_fn with a SCRIPT_NAME of 'script_name' (default '').
     """
-    _wsgi_intercept[(host, port)] = (app_create_fn, script_name)
+    _intercepts[(host, port)] = (app_create_fn, script_name)
 
-def remove_wsgi_intercept(*args):
+def remove_intercept(*args):
     """
     Remove the WSGI intercept call for (host, port).  If no arguments are
     given, removes all intercepts
     """
-    global _wsgi_intercept
-    if len(args)==0:
-        _wsgi_intercept = {}
+    global _intercepts
+    if len(args) == 0:
+        _intercepts = {}
     else:
         key = (args[0], args[1])
-        if key in _wsgi_intercept:
-            del _wsgi_intercept[key]
-
+        if key in _intercepts:
+            del _intercepts[key]
 
 def bytes_to_str(value):
     """Convert a bytestring to a unicode string."""
@@ -296,8 +295,8 @@ class WSGI_HTTPConnection(HTTPConnection):
 
         app, script_name = None, None
         
-        if key in _wsgi_intercept:
-            (app_fn, script_name) = _wsgi_intercept[key]
+        if key in _intercepts:
+            (app_fn, script_name) = _intercepts[key]
             app = app_fn()
 
         return app, script_name        
@@ -376,8 +375,8 @@ else:
 
             app, script_name = None, None
 
-            if key in _wsgi_intercept:
-                (app_fn, script_name) = _wsgi_intercept[key]
+            if key in _intercepts:
+                (app_fn, script_name) = _intercepts[key]
                 app = app_fn()
 
             return app, script_name        
