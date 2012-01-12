@@ -272,7 +272,7 @@ class FakeWSGISocket:
         pass
 
 
-class WSGI_HTTPConnection(HTTPConnection):
+class InterceptedHTTPConnection(HTTPConnection):
     """
     Intercept all traffic to certain hosts & redirect into a WSGI
     application object.
@@ -325,7 +325,7 @@ try:
 except ImportError:
     pass
 else:
-    class WSGI_HTTPSConnection(HTTPSConnection):
+    class InterceptedHTTPSConnection(HTTPSConnection):
         """
         Intercept all traffic to certain hosts & redirect into a WSGI
         application object.

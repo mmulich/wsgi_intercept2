@@ -1,35 +1,34 @@
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 from urllib.request import HTTPHandler, HTTPSHandler
-from wsgi_intercept import WSGI_HTTPConnection, WSGI_HTTPSConnection
+from wsgi_intercept import InterceptedHTTPConnection
 
 
-class WSGI_HTTPHandler(HTTPHandler):
+class InterceptedHTTPHandler(HTTPHandler):
     """
     Override the default HTTPHandler class with one that uses the
     WSGI_HTTPConnection class to open HTTP URLs.
     """
 
     def http_open(self, req):
-        return self.do_open(WSGI_HTTPConnection, req)
+        return self.do_open(InterceptedHTTPConnection, req)
 
-
-class WSGI_HTTPSHandler(HTTPSHandler):
+class InterceptedHTTPSHandler(HTTPSHandler):
     """
     Override the default HTTPSHandler class with one that uses the
     WSGI_HTTPConnection class to open HTTPS URLs.
     """
 
     def https_open(self, req):
-        return self.do_open(WSGI_HTTPSConnection, req)
+        return self.do_open(InterceptedHTTPSConnection, req)
 
-    
-def install_opener():
-    handlers = [WSGI_HTTPHandler()]
-    if WSGI_HTTPSHandler is not None:
-        handlers.append(WSGI_HTTPSHandler())
+
+def install():
+    handlers = [InterceptedHTTPHandler(), InterceptedHTTPSHandler()]
+    # Build and install an opener that users our intercepted handler.
     opener = urllib.request.build_opener(*handlers)
     urllib.request.install_opener(opener)
-    return opener
 
-def uninstall_opener():
+def uninstall():
     urllib.request.install_opener(None)

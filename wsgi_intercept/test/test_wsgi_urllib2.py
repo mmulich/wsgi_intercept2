@@ -7,10 +7,10 @@ class Urllib2HttpTestCase(base.BaseTestCase):
 
     def setUp(self):
         super(Urllib2HttpTestCase, self).setUp()
-        from wsgi_intercept.urllib2_intercept import install_opener
-        from wsgi_intercept.urllib2_intercept import uninstall_opener
-        install_opener()
-        self.addCleanup(uninstall_opener)
+        from wsgi_intercept.urllib2_intercept import install
+        from wsgi_intercept.urllib2_intercept import uninstall
+        install()
+        self.addCleanup(uninstall)
 
     def test_success(self):
         urllib.request.urlopen(self.url)

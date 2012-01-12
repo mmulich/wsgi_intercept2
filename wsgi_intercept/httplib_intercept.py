@@ -8,14 +8,14 @@
 import http.client
 import wsgi_intercept
 import sys
-from http.client import (
-    HTTPConnection as OriginalHTTPConnection, 
-    HTTPSConnection as OriginalHTTPSConnection)
+# Import the classes individually so that we have a copy when uninstalling.
+from http.client import HTTPConnection, HTTPSConnection
+
 
 def install():
-    http.client.HTTPConnection = wsgi_intercept.WSGI_HTTPConnection
-    http.client.HTTPSConnection = wsgi_intercept.WSGI_HTTPSConnection
+    http.client.HTTPConnection = wsgi_intercept.InterceptedHTTPConnection
+    http.client.HTTPSConnection = wsgi_intercept.InterceptedHTTPSConnection
 
 def uninstall():
-    http.client.HTTPConnection = OriginalHTTPConnection
-    http.client.HTTPSConnection = OriginalHTTPSConnection
+    http.client.HTTPConnection = HTTPConnection
+    http.client.HTTPSConnection = HTTPSConnection
