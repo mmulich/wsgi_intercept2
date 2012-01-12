@@ -8,9 +8,9 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         import wsgi_intercept
-        wsgi_intercept.add_wsgi_intercept(self.domain, self.port,
+        wsgi_intercept.add_intercept(self.domain, self.port,
                                           self.wsgi_app)
-        self.addCleanup(wsgi_intercept.remove_wsgi_intercept,
+        self.addCleanup(wsgi_intercept.remove_intercept,
                         self.domain, self.port)
 
     @property

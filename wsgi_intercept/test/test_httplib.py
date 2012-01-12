@@ -17,9 +17,9 @@ class HttpTestCase(base.BaseTestCase):
         httplib_intercept.install()
         # Add the intercept for a nonexistant domain
         self.domain = 'some_hopefully_nonexistant_domain'
-        wsgi_intercept.add_wsgi_intercept(self.domain, self.port,
+        wsgi_intercept.add_intercept(self.domain, self.port,
                                           testing.create_fn)
-        self.addCleanup(wsgi_intercept.remove_wsgi_intercept,
+        self.addCleanup(wsgi_intercept.remove_intercept,
                         self.domain, self.port)
         # Cleanup with an intercept uninstall
         self.addCleanup(httplib_intercept.uninstall)
