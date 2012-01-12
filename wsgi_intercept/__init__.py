@@ -1,11 +1,11 @@
 import sys
 import urllib.request, urllib.parse, urllib.error
 import traceback
+from socket import _GLOBAL_DEFAULT_TIMEOUT
 from io import BytesIO, StringIO
-import socket
-import ssl
 from http.client import _strict_sentinel
 from http.client import HTTPConnection, HTTPSConnection
+
 
 debuglevel = 0
 # 1 basic
@@ -330,77 +330,82 @@ class WSGI_HTTPConnection(HTTPConnection):
             raise
 
 
-class WSGI_HTTPSConnection(HTTPSConnection):
-    """
-    Intercept all traffic to certain hosts & redirect into a WSGI
-    application object.
-    """
-
-    # XXX http://bugs.python.org/issue13771
-    def __init__(self, host, port=None, key_file=None, cert_file=None,
-                 strict=_strict_sentinel, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 source_address=None, *, context=None, check_hostname=None):
-        # The original line as of Python 3.2 reads:
-        # super(HTTPSConnection, self).__init__(host, port, strict, timeout,
-        #                                       source_address)
-        # We modify it to call the subclass directly to avoid a recursion error.
-        HTTPConnection.__init__(self, host, port, strict, timeout, source_address)
-
-        self.key_file = key_file
-        self.cert_file = cert_file
-        if context is None:
-            # Some reasonable defaults
-            context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-            context.options |= ssl.OP_NO_SSLv2
-        will_verify = context.verify_mode != ssl.CERT_NONE
-        if check_hostname is None:
-            check_hostname = will_verify
-        elif check_hostname and not will_verify:
-            raise ValueError("check_hostname needs a SSL context with "
-                             "either CERT_OPTIONAL or CERT_REQUIRED")
-        if key_file or cert_file:
-            context.load_cert_chain(cert_file, key_file)
-        self._context = context
-        self._check_hostname = check_hostname
-
-    def get_app(self, host, port):
+try:
+    import ssl
+except ImportError:
+    pass
+else:
+    class WSGI_HTTPSConnection(HTTPSConnection):
         """
-        Return the app object for the given (host, port).
+        Intercept all traffic to certain hosts & redirect into a WSGI
+        application object.
         """
-        key = (host, int(port))
 
-        app, script_name = None, None
+        # XXX http://bugs.python.org/issue13771
+        def __init__(self, host, port=None, key_file=None, cert_file=None,
+                     strict=_strict_sentinel, timeout=_GLOBAL_DEFAULT_TIMEOUT,
+                     source_address=None, *, context=None, check_hostname=None):
+            # The original line as of Python 3.2 reads:
+            # super(HTTPSConnection, self).__init__(host, port, strict, timeout,
+            #                                       source_address)
+            # We modify it to call the subclass directly to avoid a recursion error.
+            HTTPConnection.__init__(self, host, port, strict, timeout, source_address)
 
-        if key in _wsgi_intercept:
-            (app_fn, script_name) = _wsgi_intercept[key]
-            app = app_fn()
+            self.key_file = key_file
+            self.cert_file = cert_file
+            if context is None:
+                # Some reasonable defaults
+                context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+                context.options |= ssl.OP_NO_SSLv2
+            will_verify = context.verify_mode != ssl.CERT_NONE
+            if check_hostname is None:
+                check_hostname = will_verify
+            elif check_hostname and not will_verify:
+                raise ValueError("check_hostname needs a SSL context with "
+                                 "either CERT_OPTIONAL or CERT_REQUIRED")
+            if key_file or cert_file:
+                context.load_cert_chain(cert_file, key_file)
+            self._context = context
+            self._check_hostname = check_hostname
 
-        return app, script_name        
+        def get_app(self, host, port):
+            """
+            Return the app object for the given (host, port).
+            """
+            key = (host, int(port))
 
-    def connect(self):
-        """
-        Override the connect() function to intercept calls to certain
-        host/ports.
+            app, script_name = None, None
 
-        If no app at host/port has been registered for interception then 
-        a normal HTTPSConnection is made.
-        """
-        if debuglevel:
-            sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
+            if key in _wsgi_intercept:
+                (app_fn, script_name) = _wsgi_intercept[key]
+                app = app_fn()
 
-        try:
-            (app, script_name) = self.get_app(self.host, self.port)
-            if app:
-                if debuglevel:
-                    sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
-                                     (self.host, self.port,))
-                self.sock = wsgi_fake_socket(app, self.host, self.port,
-                                             script_name)
-            else:
-                HTTPSConnection.connect(self)
+            return app, script_name        
 
-        except Exception as e:
-            if debuglevel:              # intercept & print out tracebacks
-                traceback.print_exc()
-            raise
+        def connect(self):
+            """
+            Override the connect() function to intercept calls to certain
+            host/ports.
+
+            If no app at host/port has been registered for interception then 
+            a normal HTTPSConnection is made.
+            """
+            if debuglevel:
+                sys.stderr.write('connect: %s, %s\n' % (self.host, self.port,))
+
+            try:
+                (app, script_name) = self.get_app(self.host, self.port)
+                if app:
+                    if debuglevel:
+                        sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
+                                         (self.host, self.port,))
+                    self.sock = wsgi_fake_socket(app, self.host, self.port,
+                                                 script_name)
+                else:
+                    HTTPSConnection.connect(self)
+
+            except Exception as e:
+                if debuglevel:              # intercept & print out tracebacks
+                    traceback.print_exc()
+                raise
 
