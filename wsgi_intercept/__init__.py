@@ -167,8 +167,7 @@ def make_environ(inp, host, port, script_name):
     return environ
 
 
-# Fake socket for WSGI intercept stuff.
-class wsgi_fake_socket:
+class FakeWSGISocket:
     """
     Handle HTTP traffic and stuff into a WSGI application object instead.
 
@@ -318,8 +317,8 @@ class WSGI_HTTPConnection(HTTPConnection):
                 if debuglevel:
                     sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
                                      (self.host, self.port,))
-                self.sock = wsgi_fake_socket(app, self.host, self.port,
-                                             script_name)
+                self.sock = FakeWSGISocket(app, self.host, self.port,
+                                           script_name)
             else:
                 HTTPConnection.connect(self)
                 
@@ -399,8 +398,8 @@ else:
                     if debuglevel:
                         sys.stderr.write('INTERCEPTING call to %s:%s\n' % \
                                          (self.host, self.port,))
-                    self.sock = wsgi_fake_socket(app, self.host, self.port,
-                                                 script_name)
+                    self.sock = FakeWSGISocket(app, self.host, self.port,
+                                               script_name)
                 else:
                     HTTPSConnection.connect(self)
 
